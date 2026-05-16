@@ -75,9 +75,23 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewEvents"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:padding="16dp"
             android:clipToPadding="false" />
+
+        <!-- Empty state -->
+        <TextView
+            android:id="@+id/textViewEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:gravity="center"
+            android:text="No hay eventos disponibles.\n\nVuelve más tarde o crea un nuevo evento."
+            android:textSize="16sp"
+            android:textColor="@color/dark_gray"
+            android:padding="32dp" />
 
         <!-- FAB para crear evento (solo organizadores) -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton

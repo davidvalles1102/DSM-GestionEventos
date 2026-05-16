@@ -15,7 +15,6 @@ class EventDetailsActivity : AppCompatActivity() {
     private var eventId: String? = null
     private var currentEvent: Event? = null
     private var attendanceStatus: String? = null
-    private var attendanceListener: ListenerRegistration? = null
     private var commentsListener: ListenerRegistration? = null
     private var currentRole: String = "usuario"
     
@@ -70,7 +69,7 @@ class EventDetailsActivity : AppCompatActivity() {
         
         FirestoreUtil.getUserRole(user.uid,
             onSuccess = { role ->
-                currentRole = role ?: "usuario"
+                currentRole = role ?: Roles.USUARIO
                 updateUIForRole()
             },
             onFailure = {
@@ -81,7 +80,7 @@ class EventDetailsActivity : AppCompatActivity() {
     }
     
     private fun updateUIForRole() {
-        if (currentRole == "organizador" && currentEvent?.organizerId == firebaseAuth.currentUser?.uid) {
+        if (currentRole == Roles.ORGANIZADOR && currentEvent?.organizerId == firebaseAuth.currentUser?.uid) {
             binding.btnEditEvent.visibility = android.view.View.VISIBLE
             binding.btnEditEvent.setOnClickListener {
                 val intent = Intent(this, CreateEventActivity::class.java)
@@ -130,7 +129,7 @@ class EventDetailsActivity : AppCompatActivity() {
     }
     
     private fun updateAttendanceButtons() {
-        if (attendanceStatus == "CONFIRMED") {
+        if (attendanceStatus == AttendanceStatus.CONFIRMED) {
             binding.btnConfirmAttendance.visibility = android.view.View.GONE
             binding.btnCancelAttendance.visibility = android.view.View.VISIBLE
         } else {
@@ -145,7 +144,7 @@ class EventDetailsActivity : AppCompatActivity() {
         val attendance = Attendance(
             userId = user.uid,
             eventId = eventId!!,
-            status = "CONFIRMED"
+            status = AttendanceStatus.CONFIRMED
         )
         
         FirestoreUtil.confirmAttendance(attendance,
@@ -211,8 +210,8 @@ class EventDetailsActivity : AppCompatActivity() {
     
     override fun onPause() {
         super.onPause()
-        attendanceListener?.remove()
         commentsListener?.remove()
+        commentsListener = null
     }
 }
 

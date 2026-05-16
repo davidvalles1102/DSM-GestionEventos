@@ -37,14 +37,24 @@
     </LinearLayout>
 
     <!-- Lista de historial -->
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewHistory"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="8dp" />
 
-        <LinearLayout
-            android:id="@+id/historyListContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/textViewEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:gravity="center"
+        android:text="No hay eventos asistidos en tu historial.\n\nConfirma tu asistencia a eventos para verlos aquí."
+        android:textSize="16sp"
+        android:textColor="@color/dark_gray"
+        android:padding="32dp" />
 </LinearLayout>

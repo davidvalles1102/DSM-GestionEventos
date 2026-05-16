@@ -42,7 +42,7 @@ class StatisticsActivity : AppCompatActivity() {
         
         FirestoreUtil.getUserRole(user.uid,
             onSuccess = { role ->
-                currentRole = role ?: "usuario"
+                currentRole = role ?: Roles.USUARIO
                 loadStatistics()
             },
             onFailure = {
@@ -55,7 +55,7 @@ class StatisticsActivity : AppCompatActivity() {
     private fun loadStatistics() {
         val user = firebaseAuth.currentUser ?: return
         
-        if (currentRole == "organizador") {
+        if (currentRole == Roles.ORGANIZADOR) {
             // Estadísticas del organizador
             eventsListener = FirestoreUtil.listenToOrganizerEvents(user.uid) { events ->
                 binding.textViewTotalEvents.text = "Total eventos creados: ${events.size}"
@@ -89,7 +89,10 @@ class StatisticsActivity : AppCompatActivity() {
             )
             
             val pieDataSet = PieDataSet(pieEntries, "").apply {
-                colors = listOf(Color.parseColor("#4CAF50"), Color.parseColor("#E53935"))
+                colors = listOf(
+                    getColor(R.color.chart_green),
+                    getColor(R.color.chart_red)
+                )
                 valueTextSize = 14f
                 valueTextColor = Color.WHITE
             }
@@ -114,7 +117,7 @@ class StatisticsActivity : AppCompatActivity() {
             }
             
             val barDataSet = BarDataSet(barEntries, "Eventos por mes").apply {
-                color = Color.parseColor("#2D6CDF")
+                color = getColor(R.color.chart_blue)
                 valueTextSize = 12f
             }
             
@@ -144,7 +147,7 @@ class StatisticsActivity : AppCompatActivity() {
         }
         
         val barDataSet = BarDataSet(barEntries, "Eventos creados por mes").apply {
-            color = Color.parseColor("#2D6CDF")
+            color = getColor(R.color.chart_blue)
             valueTextSize = 12f
         }
         

@@ -35,8 +35,8 @@ class CreateEventActivity : AppCompatActivity() {
         if (user != null) {
             FirestoreUtil.getUserRole(user.uid,
                 onSuccess = { role ->
-                    currentRole = role ?: "usuario"
-                    if (currentRole != "organizador" && eventId == null) {
+                    currentRole = role ?: Roles.USUARIO
+                    if (currentRole != Roles.ORGANIZADOR && eventId == null) {
                         // Si no es organizador y está creando (no editando), cerrar la actividad
                         Toast.makeText(this, "Solo los organizadores pueden crear eventos", Toast.LENGTH_SHORT).show()
                         finish()
@@ -182,31 +182,42 @@ class CreateEventActivity : AppCompatActivity() {
             )
         }
 
+        binding.btnSaveEvent.isEnabled = false
+        binding.progressBar.visibility = android.view.View.VISIBLE
         if (eventId != null) {
             FirestoreUtil.updateEvent(event,
                 onSuccess = {
+                    binding.btnSaveEvent.isEnabled = true
+                    binding.progressBar.visibility = android.view.View.GONE
                     Toast.makeText(this, "Evento actualizado exitosamente", Toast.LENGTH_SHORT).show()
                     finish()
                 },
                 onFailure = {
+                    binding.btnSaveEvent.isEnabled = true
+                    binding.progressBar.visibility = android.view.View.GONE
                     Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
             )
         } else {
-            // Verificar que el usuario sea organizador antes de crear
-            if (currentRole != "organizador") {
+            if (currentRole != Roles.ORGANIZADOR) {
+                binding.btnSaveEvent.isEnabled = true
+                binding.progressBar.visibility = android.view.View.GONE
                 Toast.makeText(this, "Solo los organizadores pueden crear eventos", Toast.LENGTH_SHORT).show()
                 return
             }
-            
+
             Log.d("CreateEventActivity", "Intentando crear evento: $title")
             FirestoreUtil.createEvent(event,
                 onSuccess = {
+                    binding.btnSaveEvent.isEnabled = true
+                    binding.progressBar.visibility = android.view.View.GONE
                     Log.d("CreateEventActivity", "Evento creado exitosamente")
                     Toast.makeText(this, "Evento creado exitosamente", Toast.LENGTH_SHORT).show()
                     finish()
                 },
                 onFailure = { error ->
+                    binding.btnSaveEvent.isEnabled = true
+                    binding.progressBar.visibility = android.view.View.GONE
                     Log.e("CreateEventActivity", "Error al crear evento: ${error.message}", error)
                     Toast.makeText(this, "Error al crear evento: ${error.message}", Toast.LENGTH_LONG).show()
                 }

@@ -66,7 +66,7 @@ class EventsListActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_create_event -> {
-                    if (currentRole == "organizador") {
+                    if (currentRole == Roles.ORGANIZADOR) {
                         startActivity(Intent(this, CreateEventActivity::class.java))
                     } else {
                         Toast.makeText(this, "Solo los organizadores pueden crear eventos", Toast.LENGTH_SHORT).show()
@@ -129,7 +129,7 @@ class EventsListActivity : AppCompatActivity() {
     
     private fun setupFloatingActionButton() {
         binding.fabCreateEvent.setOnClickListener {
-            if (currentRole == "organizador") {
+            if (currentRole == Roles.ORGANIZADOR) {
                 startActivity(Intent(this, CreateEventActivity::class.java))
             } else {
                 Toast.makeText(this, "Solo los organizadores pueden crear eventos", Toast.LENGTH_SHORT).show()
@@ -175,8 +175,9 @@ class EventsListActivity : AppCompatActivity() {
                 parseEventDate(event.date, event.time) >= today
             }
         }
-        
+
         eventsAdapter.updateEvents(filteredEvents)
+        updateEmptyState(filteredEvents.isEmpty())
     }
     
     private fun parseEventDate(date: String, time: String): Long {
@@ -214,7 +215,7 @@ class EventsListActivity : AppCompatActivity() {
         FirestoreUtil.getUserRole(
             userId = user.uid,
             onSuccess = { role ->
-                currentRole = role ?: "usuario"
+                currentRole = role ?: Roles.USUARIO
                 updateUIForRole()
                 loadEvents()
             },
@@ -227,7 +228,7 @@ class EventsListActivity : AppCompatActivity() {
     }
     
     private fun updateUIForRole() {
-        if (currentRole == "organizador") {
+        if (currentRole == Roles.ORGANIZADOR) {
             binding.fabCreateEvent.show()
             binding.navView.menu.findItem(R.id.nav_create_event).isVisible = true
         } else {
@@ -236,10 +237,15 @@ class EventsListActivity : AppCompatActivity() {
         }
     }
     
+    private fun updateEmptyState(isEmpty: Boolean) {
+        binding.textViewEmpty.visibility = if (isEmpty) android.view.View.VISIBLE else android.view.View.GONE
+        binding.recyclerViewEvents.visibility = if (isEmpty) android.view.View.GONE else android.view.View.VISIBLE
+    }
+
     private fun loadEvents() {
         val user = firebaseAuth.currentUser ?: return
         
-        if (currentRole == "organizador") {
+        if (currentRole == Roles.ORGANIZADOR) {
             // Organizador ve solo sus eventos
             eventsListener = FirestoreUtil.listenToOrganizerEvents(user.uid) { events ->
                 allEvents = events
@@ -266,16 +272,17 @@ class EventsListActivity : AppCompatActivity() {
             }
             
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText.isNullOrEmpty()) {
-                    eventsAdapter.updateEvents(filteredEvents)
+                val result = if (newText.isNullOrEmpty()) {
+                    filteredEvents
                 } else {
-                    val filtered = filteredEvents.filter {
+                    filteredEvents.filter {
                         it.title.contains(newText, ignoreCase = true) ||
                         it.description.contains(newText, ignoreCase = true) ||
                         it.location.contains(newText, ignoreCase = true)
                     }
-                    eventsAdapter.updateEvents(filtered)
                 }
+                eventsAdapter.updateEvents(result)
+                updateEmptyState(result.isEmpty())
                 return true
             }
         })
@@ -295,12 +302,14 @@ class EventsListActivity : AppCompatActivity() {
     
     override fun onResume() {
         super.onResume()
+        eventsListener?.remove()
         loadEvents()
     }
-    
+
     override fun onPause() {
         super.onPause()
         eventsListener?.remove()
+        eventsListener = null
     }
 }
 

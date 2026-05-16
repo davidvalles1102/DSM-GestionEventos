@@ -21,7 +21,7 @@ object FirestoreUtil {
     fun createUserDocument(
         userId: String,
         email: String,
-        role: String = "normal", // Default role
+        role: String = Roles.USUARIO,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -389,14 +389,14 @@ object FirestoreUtil {
                 if (snapshot.isEmpty) {
                     // No existe, crear nueva
                     val docRef = attendancesCollection.document()
-                    val attendanceWithId = attendance.copy(id = docRef.id, status = "CONFIRMED")
+                    val attendanceWithId = attendance.copy(id = docRef.id, status = AttendanceStatus.CONFIRMED)
                     docRef.set(attendanceWithId.toMap())
                         .addOnSuccessListener { onSuccess() }
                         .addOnFailureListener { onFailure(it) }
                 } else {
                     // Existe, actualizar
                     val doc = snapshot.documents[0]
-                    doc.reference.update("status", "CONFIRMED", "timestamp", System.currentTimeMillis())
+                    doc.reference.update("status", AttendanceStatus.CONFIRMED, "timestamp", System.currentTimeMillis())
                         .addOnSuccessListener { onSuccess() }
                         .addOnFailureListener { onFailure(it) }
                 }
@@ -413,7 +413,7 @@ object FirestoreUtil {
             .addOnSuccessListener { snapshot ->
                 if (!snapshot.isEmpty) {
                     val doc = snapshot.documents[0]
-                    doc.reference.update("status", "CANCELLED", "timestamp", System.currentTimeMillis())
+                    doc.reference.update("status", AttendanceStatus.CANCELLED, "timestamp", System.currentTimeMillis())
                         .addOnSuccessListener { onSuccess() }
                         .addOnFailureListener { onFailure(it) }
                 } else {
@@ -444,7 +444,7 @@ object FirestoreUtil {
     fun getConfirmedAttendeesCount(eventId: String, onSuccess: (Int) -> Unit, onFailure: (Exception) -> Unit) {
         attendancesCollection
             .whereEqualTo("eventId", eventId)
-            .whereEqualTo("status", "CONFIRMED")
+            .whereEqualTo("status", AttendanceStatus.CONFIRMED)
             .get()
             .addOnSuccessListener { snapshot ->
                 onSuccess(snapshot.size())
@@ -456,7 +456,7 @@ object FirestoreUtil {
     fun listenToEventAttendances(eventId: String, onAttendancesChanged: (List<Attendance>) -> Unit): ListenerRegistration {
         return attendancesCollection
             .whereEqualTo("eventId", eventId)
-            .whereEqualTo("status", "CONFIRMED")
+            .whereEqualTo("status", AttendanceStatus.CONFIRMED)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.w("FirestoreUtil", "Listen to attendances failed.", error)
@@ -481,7 +481,7 @@ object FirestoreUtil {
     fun getUserAttendedEvents(userId: String, onSuccess: (List<String>) -> Unit, onFailure: (Exception) -> Unit) {
         attendancesCollection
             .whereEqualTo("userId", userId)
-            .whereEqualTo("status", "CONFIRMED")
+            .whereEqualTo("status", AttendanceStatus.CONFIRMED)
             .get()
             .addOnSuccessListener { snapshot ->
                 val eventIds = snapshot.documents.mapNotNull { it.getString("eventId") }
@@ -529,6 +529,15 @@ object FirestoreUtil {
             }
     }
     
+    // Contar comentarios de un usuario
+    fun getUserCommentsCount(userId: String, onSuccess: (Int) -> Unit, onFailure: (Exception) -> Unit) {
+        commentsCollection
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { onSuccess(it.size()) }
+            .addOnFailureListener { onFailure(it) }
+    }
+
     // Obtener promedio de calificaciones de un evento
     fun getEventAverageRating(eventId: String, onSuccess: (Double) -> Unit, onFailure: (Exception) -> Unit) {
         commentsCollection

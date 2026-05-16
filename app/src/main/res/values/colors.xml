@@ -9,6 +9,18 @@
     <color name="success_green">#4CAF50</color>
     <color name="warning_red">#E53935</color>
     
+    <!-- Colores para gráficas -->
+    <color name="chart_blue">#2D6CDF</color>
+    <color name="chart_green">#4CAF50</color>
+    <color name="chart_red">#E53935</color>
+    <color name="chart_pink">#FF6384</color>
+    <color name="chart_light_blue">#36A2EB</color>
+    <color name="chart_yellow">#FFCE56</color>
+    <color name="chart_teal">#4BC0C0</color>
+    <color name="chart_purple">#9966FF</color>
+    <color name="chart_orange">#FF9F40</color>
+    <color name="chart_gray">#C9CBCF</color>
+
     <!-- Colores legacy para compatibilidad -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>

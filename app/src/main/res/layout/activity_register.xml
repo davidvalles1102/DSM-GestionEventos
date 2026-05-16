@@ -154,11 +154,19 @@
                 android:textSize="16sp" />
         </RadioGroup>
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/newRegisterButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="8dp"
             android:background="@color/primary_blue"
             android:text="Crear cuenta"
             android:textColor="@color/white"

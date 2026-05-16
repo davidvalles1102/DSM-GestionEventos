@@ -1,8 +1,8 @@
 package com.foro_2
 
-
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.foro_2.databinding.ActivityRegisterBinding
@@ -89,6 +89,11 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "¡Campos vacíos no están permitidos!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Ingresa un correo electrónico válido", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             
             if (pass != confirmPass) {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
@@ -100,33 +105,39 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-                firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
-                    if (it.isSuccessful) {
+            binding.newRegisterButton.isEnabled = false
+            binding.progressBar.visibility = android.view.View.VISIBLE
+            firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
+                if (it.isSuccessful) {
                     val user = firebaseAuth.currentUser
                     if (user != null) {
-                        // Crear documento de usuario en Firestore con el rol
                         FirestoreUtil.createUserDocument(
                             userId = user.uid,
                             email = email,
                             role = role,
                             onSuccess = {
-                        val builder = android.app.AlertDialog.Builder(this)
-                        builder.setTitle("Registro exitoso")
-                                builder.setMessage("Tu cuenta ha sido creada correctamente como $role.")
-                        builder.setPositiveButton("Aceptar") { dialog, _ ->
-                            dialog.dismiss()
-                                    val intent = Intent(this, EventsListActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        }
-                        builder.show()
+                                binding.newRegisterButton.isEnabled = true
+                                binding.progressBar.visibility = android.view.View.GONE
+                                android.app.AlertDialog.Builder(this)
+                                    .setTitle("Registro exitoso")
+                                    .setMessage("Tu cuenta ha sido creada correctamente como $role.")
+                                    .setPositiveButton("Aceptar") { dialog, _ ->
+                                        dialog.dismiss()
+                                        startActivity(Intent(this, EventsListActivity::class.java))
+                                        finish()
+                                    }
+                                    .show()
                             },
                             onFailure = { e ->
+                                binding.newRegisterButton.isEnabled = true
+                                binding.progressBar.visibility = android.view.View.GONE
                                 Toast.makeText(this, "Error al guardar datos: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
+                            }
                         )
                     }
-            } else {
+                } else {
+                    binding.newRegisterButton.isEnabled = true
+                    binding.progressBar.visibility = android.view.View.GONE
                     Toast.makeText(this, it.exception?.localizedMessage ?: "Error desconocido", Toast.LENGTH_SHORT).show()
                 }
             }

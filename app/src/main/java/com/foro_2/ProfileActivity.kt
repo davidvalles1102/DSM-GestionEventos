@@ -5,54 +5,57 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.foro_2.databinding.ActivityProfileBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ListenerRegistration
 
 class ProfileActivity : AppCompatActivity() {
-    
+
     private lateinit var binding: ActivityProfileBinding
     private lateinit var firebaseAuth: FirebaseAuth
-    private var attendancesListener: ListenerRegistration? = null
-    private var commentsListener: ListenerRegistration? = null
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
-        // Configurar barras del sistema después de setContentView
         SystemUIHelper.setupSystemBars(this)
-        
+
         firebaseAuth = FirebaseAuth.getInstance()
-        
+
         setupUI()
         loadUserData()
         loadStatistics()
     }
-    
+
     private fun setupUI() {
         binding.btnEditProfile.setOnClickListener {
             Toast.makeText(this, "Edición de perfil próximamente", Toast.LENGTH_SHORT).show()
         }
-        
+
         binding.btnLogout.setOnClickListener {
             showLogoutConfirmation()
         }
     }
-    
+
     private fun loadUserData() {
         val user = firebaseAuth.currentUser ?: return
-        
+
         binding.textViewName.text = user.displayName ?: user.email?.split("@")?.get(0) ?: "Usuario"
         binding.textViewEmail.text = user.email ?: ""
-        
-        // Cargar rol
+
+        if (user.photoUrl != null) {
+            Glide.with(this)
+                .load(user.photoUrl)
+                .circleCrop()
+                .placeholder(android.R.drawable.ic_menu_myplaces)
+                .into(binding.imageViewProfile)
+        }
+
         FirestoreUtil.getUserRole(user.uid,
             onSuccess = { role ->
                 binding.textViewAccountType.text = when (role) {
-                    "organizador" -> "Organizador"
+                    Roles.ORGANIZADOR -> "Organizador"
                     else -> "Usuario"
                 }
             },
@@ -60,18 +63,11 @@ class ProfileActivity : AppCompatActivity() {
                 binding.textViewAccountType.text = "Usuario"
             }
         )
-        
-        // Cargar foto si existe
-        if (user.photoUrl != null) {
-            // Usar Glide o similar para cargar imagen
-            // Por ahora placeholder
-        }
     }
-    
+
     private fun loadStatistics() {
         val user = firebaseAuth.currentUser ?: return
-        
-        // Contar eventos asistidos
+
         FirestoreUtil.getUserAttendedEvents(user.uid,
             onSuccess = { eventIds ->
                 binding.textViewEventsAttended.text = "Eventos asistidos: ${eventIds.size}"
@@ -80,11 +76,17 @@ class ProfileActivity : AppCompatActivity() {
                 binding.textViewEventsAttended.text = "Eventos asistidos: 0"
             }
         )
-        
-        // Contar comentarios (simplificado - se puede mejorar)
-        binding.textViewCommentsCount.text = "Comentarios realizados: 0"
+
+        FirestoreUtil.getUserCommentsCount(user.uid,
+            onSuccess = { count ->
+                binding.textViewCommentsCount.text = "Comentarios realizados: $count"
+            },
+            onFailure = {
+                binding.textViewCommentsCount.text = "Comentarios realizados: 0"
+            }
+        )
     }
-    
+
     private fun showLogoutConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Cerrar sesión")
@@ -99,11 +101,4 @@ class ProfileActivity : AppCompatActivity() {
             .setNegativeButton("Cancelar", null)
             .show()
     }
-    
-    override fun onPause() {
-        super.onPause()
-        attendancesListener?.remove()
-        commentsListener?.remove()
-    }
 }
-

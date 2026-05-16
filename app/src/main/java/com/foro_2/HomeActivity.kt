@@ -47,34 +47,6 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, HistoryActivity::class.java))
         }
         
-        // Botón de prueba temporal para verificar historial (DEBUGGING)
-        binding.btnViewHistory.setOnLongClickListener {
-            val user = firebaseAuth.currentUser
-            if (user != null) {
-                // Agregar entrada de prueba directamente
-                val testEntry = HistoryEntry(
-                    userId = user.uid,
-                    action = "ADD",
-                    expenseName = "PRUEBA - Gasto de prueba",
-                    amount = 99.99,
-                    category = "Prueba",
-                    date = "01/01/2025",
-                    timestamp = System.currentTimeMillis()
-                )
-                
-                com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                    .collection("history")
-                    .add(testEntry.toMap())
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "✅ Entrada de prueba agregada al historial", Toast.LENGTH_LONG).show()
-                    }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(this, "❌ Error: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
-            }
-            true
-        }
-
         binding.signOutButton.setOnClickListener {
             firebaseAuth.signOut()
             startActivity(Intent(this, LoginActivity::class.java))
@@ -138,15 +110,15 @@ class HomeActivity : AppCompatActivity() {
         }
 
         val colors = listOf(
-            Color.parseColor("#FF6384"),
-            Color.parseColor("#36A2EB"),
-            Color.parseColor("#FFCE56"),
-            Color.parseColor("#4BC0C0"),
-            Color.parseColor("#9966FF"),
-            Color.parseColor("#FF9F40"),
-            Color.parseColor("#FF6384"),
-            Color.parseColor("#C9CBCF"),
-            Color.parseColor("#4BC0C0")
+            getColor(R.color.chart_pink),
+            getColor(R.color.chart_light_blue),
+            getColor(R.color.chart_yellow),
+            getColor(R.color.chart_teal),
+            getColor(R.color.chart_purple),
+            getColor(R.color.chart_orange),
+            getColor(R.color.chart_pink),
+            getColor(R.color.chart_gray),
+            getColor(R.color.chart_teal)
         )
 
         val dataSet = PieDataSet(entries, "Gastos por Categoría").apply {

@@ -9,48 +9,41 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class EventsAdapter(
+class HistoryEventAdapter(
     private var events: List<Event>,
-    private val isOrganizer: Boolean,
-    private val onEventClick: (Event) -> Unit,
-    private val onEditClick: (Event) -> Unit
-) : RecyclerView.Adapter<EventsAdapter.EventViewHolder>() {
+    private val onEventClick: (Event) -> Unit
+) : RecyclerView.Adapter<HistoryEventAdapter.ViewHolder>() {
 
-    class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.imageViewEvent)
         val titleView: TextView = itemView.findViewById(R.id.textViewTitle)
         val dateView: TextView = itemView.findViewById(R.id.textViewDate)
-        val locationView: TextView = itemView.findViewById(R.id.textViewLocation)
-        val btnViewDetails: View = itemView.findViewById(R.id.btnViewDetails)
-        val btnEdit: View? = itemView.findViewById(R.id.btnEdit)
+        val statusView: TextView = itemView.findViewById(R.id.textViewStatus)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_event, parent, false)
-        return EventViewHolder(view)
+            .inflate(R.layout.item_event_history, parent, false)
+        return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val event = events[position]
-
         holder.titleView.text = event.title
         holder.dateView.text = "${event.date} ${event.time}"
-        holder.locationView.text = event.location
+        holder.statusView.text = "Asistí"
+        holder.statusView.setTextColor(holder.itemView.context.getColor(R.color.success_green))
 
         if (event.imageUrl.isNotEmpty()) {
             Glide.with(holder.itemView.context)
                 .load(event.imageUrl)
                 .placeholder(R.drawable.ic_event_placeholder)
-                .error(R.drawable.ic_event_placeholder)
                 .into(holder.imageView)
         } else {
             holder.imageView.setImageResource(R.drawable.ic_event_placeholder)
         }
 
-        holder.btnViewDetails.setOnClickListener { onEventClick(event) }
-        holder.btnEdit?.setOnClickListener { onEditClick(event) }
-        holder.btnEdit?.visibility = if (isOrganizer) View.VISIBLE else View.GONE
+        holder.itemView.setOnClickListener { onEventClick(event) }
     }
 
     override fun getItemCount(): Int = events.size

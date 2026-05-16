@@ -163,8 +163,11 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Validación aprobada, acceso permitido
+            binding.loginButton.isEnabled = false
+            binding.progressBar.visibility = android.view.View.VISIBLE
             firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                binding.loginButton.isEnabled = true
+                binding.progressBar.visibility = android.view.View.GONE
                 if (task.isSuccessful) {
                     Log.d("LoginActivity", "Inicio de sesión exitoso")
                     val intent = Intent(this, EventsListActivity::class.java)
@@ -245,7 +248,7 @@ class LoginActivity : AppCompatActivity() {
                         FirestoreUtil.createUserDocument(
                             userId = user.uid,
                             email = user.email ?: "",
-                            role = "usuario", // Por defecto es usuario
+                            role = Roles.USUARIO,
                             onSuccess = {
                                 Log.d("LoginActivity", "Usuario creado/actualizado en Firestore")
                                 goToHome()
